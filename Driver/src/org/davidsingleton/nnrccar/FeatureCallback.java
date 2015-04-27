@@ -299,3 +299,141 @@ return resultado;
    
    }
            }
+
+import java.util.Arrays;
+/**
+ *
+ * @author Alberto
+ */
+
+public class Red {
+    double [][] CapaEntrada;
+    double [][] CapaOculta;
+    double [][] CapaSalida;
+    
+    public Red() {
+    }
+
+    public double[][] getCapaEntrada() {
+        return CapaEntrada;
+    }
+
+    public double[][] getCapaOculta() {
+        return CapaOculta;
+    }
+
+    public double[][] getCapaSalida() {
+        return CapaSalida;
+    }
+
+    public void setCapaEntrada(double[][] CapaEntrada) {
+        this.CapaEntrada = CapaEntrada;
+    }
+
+    public void setCapaOculta(double[][] CapaOculta) {
+        this.CapaOculta = CapaOculta;
+    }
+
+    public void setCapaSalida(double[][] CapaSalida) {
+        this.CapaSalida = CapaSalida;
+    }
+    
+    public String resultado(double[] img){
+        double[] salida1=null;
+        double[] salida1i=null;
+        double[]salida2=null;
+        double[]salidaF=null;
+        double[] salidaR=null;
+        String a="";
+        String b="";
+       ///Capa de entrada
+        salida1= propagacion(img,CapaEntrada);
+       salida1i=new double[salida1.length+1];
+       salida1i[0]=1; ///Agregando uno para bias
+       System.arraycopy(salida1, 0, salida1i, 1,salida1.length);
+       ///Capa Oculta
+        salida2=propagacion(salida1i,CapaOculta);
+       salida1i=new double[salida2.length+1];
+       salida1i[0]=1;///Agregando uno para bias
+       System.arraycopy(salida1, 0, salida1i, 1,salida2.length);
+        ///Capa de salida 
+               
+       salidaF=propagacion(salida1i,CapaSalida);
+           System.out.println(Arrays.toString(salidaF));
+       salidaR=regularizarsalida(salidaF);
+        for (int i = 0; i < 4; i++) {
+            b=b+Double.toString(salidaF[i])+" ";
+            a=a+(String.valueOf((int)salidaR[i]));
+        }
+     
+        return a;
+    }
+    
+  /***
+   * Funcion Umbral sigmoidal
+   * @param Un valor double
+   * @return  El valor de la funcion umbral
+   */
+    public double umb(double valor){
+       double g;
+       g=(1.0/(1.0+Math.exp(-valor)));
+       return g;
+   }
+   
+   /***
+    * Funcion auxiliar para normalizar las salidas
+    * debido a que no se pueden enviar valores con decimales al arduino
+    * @param salida
+    * @return 
+    */
+   public double[] regularizarsalida(double[] salida){
+       //recorrer arreglo para buscar el minimo 
+       double min=0;
+       double max=0;
+       double[] temp=salida;
+       for (int i = 0; i < temp.length; i++) {
+           double d=temp[i];
+           
+           if(d<min)
+               min=d;
+           if(d>max)
+               max=d;
+       }
+       
+       for (int i = 0; i < temp.length; i++) {
+           double d=salida[i];
+           
+           if(d==max)
+               temp[i]=1;
+           else
+               temp[i]=0;
+       }
+       return temp;
+   }
+   /***
+    * 
+    * @param entrada entradas a la capa con 1 como el primer valor
+    * @param datoscapa pesos de la capa
+    * @return 
+    */
+   public double[] propagacion(double[] entrada, double[][] datoscapa){
+       double sumador;
+      int f=datoscapa.length;
+       double[] salidascapa= new double[datoscapa.length];
+       //salidascapa[0]=1;
+       for (int j = 0; j < datoscapa.length; j++) {
+            sumador=0;
+            int d=datoscapa[0].length;
+           for (int i = 0; i < datoscapa[0].length; i++) {
+               try {
+                       sumador= sumador+datoscapa[j][i]*entrada[i];
+               } catch (Exception e) {
+               }
+            
+            }
+        salidascapa[j]=umb(sumador);/
+        }
+       return salidascapa;
+}
+   
+}
